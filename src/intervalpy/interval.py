@@ -8,15 +8,27 @@ class Interval:
         self.x = x.copy()
 
     def __repr__(self):
+        """
+        Representation of the interval as [a, b]
+        :return: rounded ends of the interval
+        """
         return "[" + str(round(self.x[0], 3)) + ", " + str(round(self.x[1], 3)) + "]"
 
     def __round__(self, n=3):
         return Interval([np.round(self.x[0], 3), np.round(self.x[1], 3)])
 
     def mid(self):
+        """
+        Calculate middle point of the interval
+        :return: middle of the interval, float
+        """
         return 0.5 * (self.x[0] + self.x[1])
 
     def width(self):
+        """
+        Calculate width of the interval
+        :return: width of the interval, float
+        """
         return self.x[1] - self.x[0]
 
     def scale(self, factor):
@@ -26,32 +38,65 @@ class Interval:
         self.x[1] = m + factor * r
 
     def isIn(self, other):
+        """
+        Check if the interval is inside of the another interval
+        :param other: second interval
+        :return: bool
+        """
         return (self.x[0] >= other.x[0]) and (self.x[1] <= other.x[1])
 
     def isNoIntersec(self, other):
+        """
+        Check if the interval has no intersection with another interval
+        :param other: second interval
+        :return: bool
+        """
         return (self.x[0] > other.x[1]) or (self.x[1] < other.x[0])
 
     def intersec(self, other):
+        """
+        Intersec two intervals
+        :param other: second interval
+        :return: intersection of the two intervals, interval
+        """
         if self.x[0] > self.x[1]:
             raise ValueError(other.x[0], other.x[1], "results in wrong bounds:", self.x[0], self.x[1])
         return Interval([max(self.x[0], other.x[0]), min(self.x[1], other.x[1])])
 
     def __getitem__(self, item):
+        """
+        Get the end of the interval
+        :param item: left(0) or right(1) end of the interval
+        :return: end of the interval, float
+        """
         return self.x[item]
 
     def __setitem__(self, key, value):
+        """
+        Set the end of the interval
+        :param key: left(0) or right(1) end of the interval
+        :param value: new value of the end of the interval
+        """
         self.x.__setitem__(key, value)
 
     def __neg__(self):
+        """
+        Return negative interval
+        :return: interval
+        """
         ninterval = Interval(self.x)
         ninterval.x[0] = - self.x[1]
         ninterval.x[1] = - self.x[0]
         return ninterval
 
     def __add__(self, other):
+        """
+        Interval addition of two intervals
+        :param other: second interval
+        :return: interval
+        """
         ointerval = valueToInterval(other)
         ninterval = Interval(self.x)
-        # print(self, other)
         ninterval.x[0] = self.x[0] + ointerval.x[0]
         ninterval.x[1] = self.x[1] + ointerval.x[1]
         return ninterval
@@ -60,6 +105,11 @@ class Interval:
         return self.__add__(other)
 
     def __sub__(self, other):
+        """
+        Interval subtraction of two intervals
+        :param other: second interval
+        :return: interval
+        """
         ointerval = valueToInterval(other)
         ninterval = Interval(self.x)
         ninterval.x[0] = self.x[0] - ointerval.x[1]
@@ -71,6 +121,11 @@ class Interval:
         return ointerval.__sub__(self)
 
     def __pow__(self, other):
+        """
+        Interval power function
+        :param other: power value
+        :return: interval
+        """
         ninterval = Interval(self.x)
         u = self.x[0] ** other
         v = self.x[1] ** other
@@ -89,12 +144,22 @@ class Interval:
         return ninterval
 
     def __mul__(self, other):
+        """
+        Interval multiplication
+        :param other: second interval
+        :return: interval
+        """
         ointerval = valueToInterval(other)
         v = [self.x[0] * ointerval.x[0], self.x[0] * ointerval.x[1], self.x[1] * ointerval.x[0], self.x[1] * ointerval.x[1]]
         b = [min(v), max(v)]
         return Interval(b)
 
     def __truediv__(self, other):
+        """
+        Interval division. It includes two variants: if the denominator interval contains zero and doesn't contain
+        :param other: second interval
+        :return: interval
+        """
         ointerval = valueToInterval(other)
         # v = [self.x[0] / ointerval.x[0], self.x[0] / ointerval.x[1], self.x[1] / ointerval.x[0],
         #      self.x[1] / ointerval.x[1]]
@@ -135,8 +200,12 @@ class Interval:
             # print(type(c))
             return c
 
-
     def __floordiv__(self, other):
+        """
+        Floor division
+        :param other: second interval
+        :return: interval
+        """
         ointerval = valueToInterval(other)
         v = [self.x[0] // ointerval.x[0], self.x[0] // ointerval.x[1], self.x[1] // ointerval.x[0],
                  self.x[1] // ointerval.x[1]]
@@ -152,6 +221,11 @@ class Interval:
 
 
 def valueToInterval(expr):
+    """
+    Transformate float and int values into interval type
+    :param expr: input float or int
+    :return: interval
+    """
     if isinstance(expr, int):
         etmp = Interval([expr, expr])
     elif isinstance(expr, float):
@@ -162,6 +236,11 @@ def valueToInterval(expr):
 
 
 def sin(x):
+    """
+    Interval sine function
+    :param x: input interval
+    :return: interval
+    """
     if isinstance(x, (int, np.integer)):
         return math.sin(x)
     elif isinstance(x, (float, np.float)):
@@ -179,10 +258,15 @@ def sin(x):
             a = -1
         else:
             a = min(y)
-        return Interval([a,b])
+        return Interval([a, b])
 
 
 def cos(x):
+    """
+    Interval cosine function
+    :param x: input interval
+    :return: interval
+    """
     if isinstance(x, (int, np.integer)):
         return math.cos(x)
     elif isinstance(x, (float, np.float)):
@@ -202,10 +286,20 @@ def cos(x):
 
 
 def exp(x):
+    """
+    Interval exponent function
+    :param x: input interval
+    :return: interval
+    """
     return Interval([math.exp(x[0]), math.exp(x[1])])
 
 
 def abs(x):
+    """
+    Absolute interval
+    :param x: input interval
+    :return: interval
+    """
     if x[1] < 0:
         return Interval([-x[0], -x[1]])
     elif x[0] < 0 and x[1] > 0:
@@ -218,6 +312,12 @@ def abs(x):
 
 
 def log(x, base):
+    """
+    Interval Logarithm function
+    :param x: input interval
+    :param base: base value
+    :return: interval
+    """
     if base > 1:
         return Interval([math.log(x[0], base), math.log(x[1], base)])
     else:
