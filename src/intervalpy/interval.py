@@ -89,6 +89,12 @@ class Interval:
         ninterval.x[1] = - self.x[0]
         return ninterval
 
+    def __eq__(self, other):
+        if self.x[0] == other.x[0] and self.x[1] == other.x[1]:
+            return True
+        else:
+            return False
+
     def __add__(self, other):
         """
         Interval addition of two intervals
@@ -165,37 +171,46 @@ class Interval:
         #      self.x[1] / ointerval.x[1]]
         # f = [min(v), max(v)]
         # return Interval(f)
-        if not(valueToInterval(0).isIn(ointerval)):
+        if not (valueToInterval(0).isIn(ointerval)):
             v = [self.x[0] / ointerval.x[0], self.x[0] / ointerval.x[1], self.x[1] / ointerval.x[0],
                  self.x[1] / ointerval.x[1]]
             f = [min(v), max(v)]
             return Interval(f)
         else:
             # print(self, ointerval)
-            c = []
+            # c = []
             a1, a2 = self.x[0], self.x[1]
             b1, b2 = ointerval.x[0], ointerval.x[1]
-            if b2 == 0:
-                c = self * Interval([-np.inf, 1/b1])
-            elif b1 == 0:
-                c = self * Interval([1 / b2, np.inf])
-            elif b1 < 0 and b2 > 0:
-                # c = [self*Interval([-np.inf, 1 / b1]), self*Interval([1 / b2, np.inf])]
-                c = Interval([-np.inf, np.inf])
-            # if b2 == 0 and a2 <=0:
-            #     c = [a2/b1, np.inf]
-            # elif a2 < 0 and b1 < 0 and b2 > 0:
-            #     c = [[-np.inf, a2/b2], [a2/b1, np.inf]]
-            # elif a2 <= 0 and b1 == 0:
-            #     c = [-np.inf, a2/b2]
-            # elif a1 >= 0 and b2 == 0:
-            #     c = [-np.inf, a1/b1]
-            # elif a1 > 0 and b1 < 0 and b2 > 0:
-            #     c = [[-np.inf, a1/b1], [a1/b2, np.inf]]
-            # elif a1 >= 0 and b1 == 0:
-            #     c = [a1/b2, np.inf]
-            # elif a1 < 0 and a2 > 0:
-            #     c = [-np.inf, np.inf]
+            # if b2 == 0:
+            #     c = self * Interval([-np.inf, 1/b1])
+            # elif b1 == 0:
+            #     c = self * Interval([1 / b2, np.inf])
+            # elif b1 < 0 and b2 > 0:
+            #     # c = [self*Interval([-np.inf, 1 / b1]), self*Interval([1 / b2, np.inf])]
+            #     c = Interval([-np.inf, np.inf])
+            if b2 == 0 and a2 <= 0:
+                c = [a2 / b1, np.inf]
+            elif a2 < 0 and b1 < 0 and b2 > 0:
+                c = [[-np.inf, a2 / b2], [a2 / b1, np.inf]]
+            elif a2 <= 0 and b1 == 0:
+                c = [-np.inf, a2 / b2]
+            elif a1 >= 0 and b2 == 0:
+                c = [-np.inf, a1 / b1]
+            elif a1 > 0 and b1 < 0 and b2 > 0:
+                c = [[-np.inf, a1 / b1], [a1 / b2, np.inf]]
+            elif a1 >= 0 and b1 == 0:
+                c = [a1 / b2, np.inf]
+            elif a1 <= 0 and a2 >= 0:
+                c = [-np.inf, np.inf]
+            # print(c)
+            # print(len(np.shape(c)))
+            if len(np.shape(c)) != 2:
+                c = Interval(c)
+            else:
+                ival_c = []
+                for el in c:
+                    ival_c.append(Interval(el))
+                c = ExtendedInterval(ival_c)
             # print(c)
             # print(type(c))
             return c
@@ -220,6 +235,39 @@ class Interval:
         return ointerval.__truediv__(self)
 
 
+class ExtendedInterval(Interval):
+    def __init__(self, x):
+        self.x = x.copy()
+
+    def __sub__(self, other):
+        ointerval = valueToIntervalExtended(other)
+        ninterval = ExtendedInterval([Interval([0, 0]), Interval([0, 0])])
+        ninterval[0][0] = -np.inf
+        ninterval[1][1] = np.inf
+        ninterval[0][1] = self.x[0] - ointerval[1][0]
+        ninterval[1][0] = self.x[0] - ointerval[0][1]
+        return ninterval
+
+    def name(self):
+        return "Extended"
+
+    def __rsub__(self, other):
+        ointerval = valueToIntervalExtended(other)
+        return ointerval.__sub__(self)
+
+    def isIn(self, other):
+        isIn_list = []
+        for interval in self:
+            isIn_list.append((interval.x[0] >= other.x[0]) and (interval.x[1] <= other.x[1]))
+        return isIn_list
+
+    def isNoIntersec(self, other):
+        isIntersec_list = []
+        for interval in self:
+            isIntersec_list.append((interval.x[0] >= other.x[1]) or (interval.x[1] <= other.x[0]))
+        return isIntersec_list
+
+
 def valueToInterval(expr):
     """
     Transformate float and int values into interval type
@@ -230,6 +278,16 @@ def valueToInterval(expr):
         etmp = Interval([expr, expr])
     elif isinstance(expr, float):
         etmp = Interval([expr, expr])
+    else:
+        etmp = expr
+    return etmp
+
+
+def valueToIntervalExtended(expr):
+    if isinstance(expr, int):
+        etmp = ExtendedInterval([expr, expr])
+    elif isinstance(expr, float):
+        etmp = ExtendedInterval([expr, expr])
     else:
         etmp = expr
     return etmp
