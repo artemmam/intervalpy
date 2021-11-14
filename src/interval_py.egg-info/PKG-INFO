@@ -1,6 +1,6 @@
 Metadata-Version: 2.1
 Name: interval-py
-Version: 0.0.2
+Version: 0.0.3
 Summary: Interval arithmetic library for Python
 Home-page: https://github.com/artemmam/intervalpy
 Author: Artem Maminov, Mikhail Posypkin
