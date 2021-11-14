@@ -67,6 +67,19 @@ class TestStringMethods(unittest.TestCase):
         c = Interval([-np.inf, np.inf])
         self.assertEqual(a / b, c)
 
+    def test_extended_interval_methods(self):
+        a = 1
+        b = ExtendedInterval([Interval([-np.inf, -1]), Interval([0, np.inf])])
+        c = ExtendedInterval([Interval([-np.inf, 1]), Interval([2, np.inf])])
+        self.assertEqual(a - b, c)
+        a = Interval([-1, 1])
+        b = ExtendedInterval([Interval([-1, 1]), Interval([-2, 2])])
+        c = [True, False]
+        self.assertEqual(b.isIn(a), c)
+        a = Interval([-1, 1])
+        b = ExtendedInterval([Interval([-3, -2]), Interval([-2, 2])])
+        c = [True, False]
+        self.assertEqual(b.isNoIntersec(a), c)
 
 if __name__ == '__main__':
     unittest.main()

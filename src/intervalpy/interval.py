@@ -164,30 +164,17 @@ class Interval:
         """
         Interval division. It includes two variants: if the denominator interval contains zero and doesn't contain
         :param other: second interval
-        :return: interval
+        :return: interval or extended interval
         """
         ointerval = valueToInterval(other)
-        # v = [self.x[0] / ointerval.x[0], self.x[0] / ointerval.x[1], self.x[1] / ointerval.x[0],
-        #      self.x[1] / ointerval.x[1]]
-        # f = [min(v), max(v)]
-        # return Interval(f)
         if not (valueToInterval(0).isIn(ointerval)):
             v = [self.x[0] / ointerval.x[0], self.x[0] / ointerval.x[1], self.x[1] / ointerval.x[0],
                  self.x[1] / ointerval.x[1]]
             f = [min(v), max(v)]
             return Interval(f)
         else:
-            # print(self, ointerval)
-            # c = []
             a1, a2 = self.x[0], self.x[1]
             b1, b2 = ointerval.x[0], ointerval.x[1]
-            # if b2 == 0:
-            #     c = self * Interval([-np.inf, 1/b1])
-            # elif b1 == 0:
-            #     c = self * Interval([1 / b2, np.inf])
-            # elif b1 < 0 and b2 > 0:
-            #     # c = [self*Interval([-np.inf, 1 / b1]), self*Interval([1 / b2, np.inf])]
-            #     c = Interval([-np.inf, np.inf])
             if b2 == 0 and a2 <= 0:
                 c = [a2 / b1, np.inf]
             elif a2 < 0 and b1 < 0 and b2 > 0:
@@ -202,8 +189,6 @@ class Interval:
                 c = [a1 / b2, np.inf]
             elif a1 <= 0 and a2 >= 0:
                 c = [-np.inf, np.inf]
-            # print(c)
-            # print(len(np.shape(c)))
             if len(np.shape(c)) != 2:
                 c = Interval(c)
             else:
@@ -211,8 +196,6 @@ class Interval:
                 for el in c:
                     ival_c.append(Interval(el))
                 c = ExtendedInterval(ival_c)
-            # print(c)
-            # print(type(c))
             return c
 
     def __floordiv__(self, other):
@@ -240,6 +223,11 @@ class ExtendedInterval(Interval):
         self.x = x.copy()
 
     def __sub__(self, other):
+        """
+        Interval subtraction of extended interval and classical
+        :param other: interval
+        :return: extended interval
+        """
         ointerval = valueToIntervalExtended(other)
         ninterval = ExtendedInterval([Interval([0, 0]), Interval([0, 0])])
         ninterval[0][0] = -np.inf
@@ -256,12 +244,22 @@ class ExtendedInterval(Interval):
         return ointerval.__sub__(self)
 
     def isIn(self, other):
+        """
+        Check if every interval of the extended interval is inside of the another interval
+        :param other: second interval
+        :return: list of bool
+        """
         isIn_list = []
         for interval in self:
             isIn_list.append((interval.x[0] >= other.x[0]) and (interval.x[1] <= other.x[1]))
         return isIn_list
 
     def isNoIntersec(self, other):
+        """
+        Check if every interval of the extended interval has no intersection with another interval
+        :param other: second interval
+        :return: list of bool
+        """
         isIntersec_list = []
         for interval in self:
             isIntersec_list.append((interval.x[0] >= other.x[1]) or (interval.x[1] <= other.x[0]))
@@ -284,6 +282,11 @@ def valueToInterval(expr):
 
 
 def valueToIntervalExtended(expr):
+    """
+        Transformate expr into extended interval type
+        :param expr: input float or int
+        :return: extended interval
+        """
     if isinstance(expr, int):
         etmp = ExtendedInterval([expr, expr])
     elif isinstance(expr, float):
