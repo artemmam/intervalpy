@@ -59,9 +59,11 @@ class Interval:
         :param other: second interval
         :return: intersection of the two intervals, interval
         """
-        if self.x[0] > self.x[1]:
-            raise ValueError(other.x[0], other.x[1], "results in wrong bounds:", self.x[0], self.x[1])
-        return Interval([max(self.x[0], other.x[0]), min(self.x[1], other.x[1])])
+        if self.x[1] < other.x[0] or other.x[1] < self.x[0]:
+            return None
+        #             raise ValueError(other.x[0], other.x[1], "results in wrong bounds:", self.x[0], self.x[1])
+        else:
+            return Interval([max(self.x[0], other.x[0]), min(self.x[1], other.x[1])])
 
     def __getitem__(self, item):
         """
@@ -156,7 +158,8 @@ class Interval:
         :return: interval
         """
         ointerval = valueToInterval(other)
-        v = [self.x[0] * ointerval.x[0], self.x[0] * ointerval.x[1], self.x[1] * ointerval.x[0], self.x[1] * ointerval.x[1]]
+        v = [self.x[0] * ointerval.x[0], self.x[0] * ointerval.x[1], self.x[1] * ointerval.x[0],
+             self.x[1] * ointerval.x[1]]
         b = [min(v), max(v)]
         return Interval(b)
 
@@ -173,6 +176,8 @@ class Interval:
             f = [min(v), max(v)]
             return Interval(f)
         else:
+            #             print(self)
+            #             print(ointerval)
             a1, a2 = self.x[0], self.x[1]
             b1, b2 = ointerval.x[0], ointerval.x[1]
             if b2 == 0 and a2 <= 0:
@@ -206,7 +211,7 @@ class Interval:
         """
         ointerval = valueToInterval(other)
         v = [self.x[0] // ointerval.x[0], self.x[0] // ointerval.x[1], self.x[1] // ointerval.x[0],
-                 self.x[1] // ointerval.x[1]]
+             self.x[1] // ointerval.x[1]]
         b = [min(v), max(v)]
         return Interval(b)
 
@@ -216,6 +221,70 @@ class Interval:
     def __rtruediv__(self, other):
         ointerval = valueToInterval(other)
         return ointerval.__truediv__(self)
+
+    def sqrt(self):
+        #         print("sqrt att", self)
+        if isinstance(self, (int, np.integer)):
+            return math.sqrt(self)
+        elif isinstance(self, (float, np.float64)):
+            return math.sqrt(self)
+        else:
+            return Interval([math.sqrt(self[0]), math.sqrt(self[1])])
+
+    def sin(self):
+        """
+        Interval sine function
+        :param x: input interval
+        :return: interval
+        """
+        if isinstance(self, (int, np.integer)):
+            return math.sin(self)
+        elif isinstance(self, (float, np.float64)):
+            return math.sin(self)
+        else:
+            y = [math.sin(self[0]), math.sin(self[1])]
+            pi2 = 2 * math.pi
+            pi05 = math.pi / 2
+            if math.ceil((self[0] - pi05) / pi2) <= math.floor((self[1] - pi05) / pi2):
+                b = 1
+            else:
+                b = max(y)
+            if math.ceil((self[0] + pi05) / pi2) <= math.floor((self[1] + pi05) / pi2):
+                a = -1
+            else:
+                a = min(y)
+            return Interval([a, b])
+
+    def cos(self):
+        """
+        Interval cosine function
+        :param x: input interval
+        :return: interval
+        """
+        if isinstance(self, (int, np.integer)):
+            return math.cos(self)
+        elif isinstance(self, (float, np.float64)):
+            return math.cos(self)
+        else:
+            y = [math.cos(self[0]), math.cos(self[1])]
+            pi2 = 2 * math.pi
+            if math.ceil(self[0] / pi2) <= math.floor(self[1] / pi2):
+                b = 1
+            else:
+                b = max(y)
+            if math.ceil((self[0] - math.pi) / pi2) <= math.floor((self[1] - math.pi) / pi2):
+                a = -1
+            else:
+                a = min(y)
+            return Interval([a, b])
+
+    def exp(self):
+        if isinstance(self, (int, np.integer)):
+            return math.exp(self)
+        elif isinstance(self, (float, np.float64)):
+            return math.exp(self)
+        else:
+            return Interval([math.exp(self[0]), math.exp(self[1])])
 
 
 class ExtendedInterval(Interval):
@@ -276,6 +345,10 @@ def valueToInterval(expr):
         etmp = Interval([expr, expr])
     elif isinstance(expr, float):
         etmp = Interval([expr, expr])
+    elif isinstance(expr, np.integer):
+        etmp = Interval([expr, expr])
+    elif isinstance(expr, np.float64):
+        etmp = Interval([expr, expr])
     else:
         etmp = expr
     return etmp
@@ -304,18 +377,18 @@ def sin(x):
     """
     if isinstance(x, (int, np.integer)):
         return math.sin(x)
-    elif isinstance(x, (float, np.float)):
+    elif isinstance(x, (float, np.float64)):
         return math.sin(x)
     else:
         y = [math.sin(x[0]), math.sin(x[1])]
         pi2 = 2 * math.pi
         pi05 = math.pi / 2
-        if math.ceil((x[0] - pi05)/pi2) <= math.floor((x[1] - pi05)/pi2):
+        if math.ceil((x[0] - pi05) / pi2) <= math.floor((x[1] - pi05) / pi2):
             b = 1
         else:
             b = max(y)
 
-        if math.ceil((x[0] + pi05)/pi2) <= math.floor((x[1] + pi05)/pi2):
+        if math.ceil((x[0] + pi05) / pi2) <= math.floor((x[1] + pi05) / pi2):
             a = -1
         else:
             a = min(y)
@@ -330,20 +403,20 @@ def cos(x):
     """
     if isinstance(x, (int, np.integer)):
         return math.cos(x)
-    elif isinstance(x, (float, np.float)):
+    elif isinstance(x, (float, np.float64)):
         return math.cos(x)
     else:
         y = [math.cos(x[0]), math.cos(x[1])]
         pi2 = 2 * math.pi
-        if math.ceil(x[0]/pi2) <= math.floor(x[1]/pi2):
+        if math.ceil(x[0] / pi2) <= math.floor(x[1] / pi2):
             b = 1
         else:
             b = max(y)
-        if math.ceil((x[0] - math.pi)/pi2) <= math.floor((x[1] - math.pi)/pi2):
+        if math.ceil((x[0] - math.pi) / pi2) <= math.floor((x[1] - math.pi) / pi2):
             a = -1
         else:
             a = min(y)
-        return Interval([a,b])
+        return Interval([a, b])
 
 
 def exp(x):
@@ -384,3 +457,51 @@ def log(x, base):
     else:
         return Interval([math.log(x[1], base), math.log(x[0], base)])
 
+
+def inverse(X):
+    a = X[0, 0]
+    b = X[0, 1]
+    c = X[1, 0]
+    d = X[1, 1]
+    Y = np.copy(X)
+    det = 1 / (a * d - b * c)
+    Y[0, 0] = det * d
+    Y[0, 1] = -det * b
+    Y[1, 0] = -det * c
+    Y[1, 1] = det * a
+    return a
+
+
+def zeros(n):
+    A = []
+    for i in range(n):
+        for j in range(n):
+            A.append(Interval([0, 0]))
+    A = np.array(A).reshape(n, n)
+    return A
+
+
+def min_array(X):
+    m = np.inf
+    for box in X:
+        if box[0] < m:
+            m = box[0]
+    return m
+
+
+def max_array(X):
+    m = -np.inf
+    for box in X:
+        if box[1] > m:
+            m = box[1]
+    return m
+
+
+def sqrt(x):
+    #     print("sqrt", x)
+    if isinstance(x, (int, np.integer)):
+        return np.sqrt(x)
+    elif isinstance(x, (float, np.float64)):
+        return np.sqrt(x)
+    else:
+        return Interval([np.sqrt(x[0]), np.sqrt(x[1])])
