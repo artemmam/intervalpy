@@ -457,46 +457,6 @@ def log(x, base):
     else:
         return Interval([math.log(x[1], base), math.log(x[0], base)])
 
-
-def inverse(X):
-    a = X[0, 0]
-    b = X[0, 1]
-    c = X[1, 0]
-    d = X[1, 1]
-    Y = np.copy(X)
-    det = 1 / (a * d - b * c)
-    Y[0, 0] = det * d
-    Y[0, 1] = -det * b
-    Y[1, 0] = -det * c
-    Y[1, 1] = det * a
-    return a
-
-
-def zeros(n):
-    A = []
-    for i in range(n):
-        for j in range(n):
-            A.append(Interval([0, 0]))
-    A = np.array(A).reshape(n, n)
-    return A
-
-
-def min_array(X):
-    m = np.inf
-    for box in X:
-        if box[0] < m:
-            m = box[0]
-    return m
-
-
-def max_array(X):
-    m = -np.inf
-    for box in X:
-        if box[1] > m:
-            m = box[1]
-    return m
-
-
 def sqrt(x):
     #     print("sqrt", x)
     if isinstance(x, (int, np.integer)):
