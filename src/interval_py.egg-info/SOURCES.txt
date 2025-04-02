@@ -8,3 +8,4 @@ src/interval_py.egg-info/dependency_links.txt
 src/interval_py.egg-info/top_level.txt
 src/intervalpy/__init__.py
 src/intervalpy/interval.py
+tests/test.py
