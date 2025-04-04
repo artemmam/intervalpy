@@ -31,6 +31,13 @@ class Interval:
         """
         return self.x[1] - self.x[0]
 
+    def abs_scale(self, a):
+        """
+        Enlarge interval with a value
+        :param a: float
+        :return: enlarged interval
+        """
+        return Interval([self.x[0] - a, self.x[1] + a])
     def scale(self, factor):
         m = 0.5 * (self.x[0] + self.x[1])
         r = 0.5 * (self.x[1] - self.x[0])
