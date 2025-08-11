@@ -293,6 +293,22 @@ class Interval:
         else:
             return Interval([math.exp(self[0]), math.exp(self[1])])
 
+    def abs(self):
+        """
+        Absolute interval
+        :param x: input interval
+        :return: interval
+        """
+        a, b = self.x[0], self.x[1]
+        if b < 0:
+            return Interval([-a, -b])
+        elif a < 0 and b > 0:
+            if -a > b:
+                return Interval([b, -a])
+            else:
+                return Interval([-a, b])
+        else:
+            return Interval([a, b])
 
 class ExtendedInterval(Interval):
     def __init__(self, x):
