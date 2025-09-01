@@ -308,7 +308,7 @@ class Interval:
         else:
             return Interval([math.exp(self[0]), math.exp(self[1])])
 
-    def log(self, base=np.exp):
+    def log(self, base=np.exp(1)):
         """
         Interval Logarithm function
         :param x: input interval
@@ -316,9 +316,9 @@ class Interval:
         :return: interval
         """
         if base > 1:
-            return Interval([math.log(x[0], base), math.log(x[1], base)])
+            return Interval([math.log(self[0], base), math.log(self[1], base)])
         else:
-            return Interval([math.log(x[1], base), math.log(x[0], base)])
+            return Interval([math.log(self[1], base), math.log(self[0], base)])
 
 
 class ExtendedInterval(Interval):
